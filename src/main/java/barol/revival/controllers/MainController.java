@@ -1,4 +1,4 @@
-package barol.revival.controller;
+package barol.revival.controllers;
 
 import javafx.animation.AnimationTimer;
 import javafx.event.EventHandler;
@@ -6,9 +6,7 @@ import javafx.scene.Scene;
 import javafx.scene.input.KeyEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.shape.Arc;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -100,14 +98,18 @@ public class MainController implements Initializable {
                     System.out.println("Shoot!");
                 }
                 if (rightArrow)  {
-                    dr += 4;
+                    dr += 5;
                 }
                 if (leftArrow)  {
-                    dr -= 4;
+                    dr -= 5;
                 }
 
-
-                mainService.moveAndRotateShip(power, dr);
+                mainService.accelerate(power);
+                mainService.rotateShipBy(dr);
+                mainService.moveShip(power);
+                mainService.impet(power);
+                //mainService.inertia(power);
+                mainService.slowDown(power);
                 mainService.gravity(power);
             }
         };

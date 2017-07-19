@@ -1,10 +1,8 @@
 package barol.revival.service;
 
-import barol.revival.controller.MainController;
 import barol.revival.models.Ship;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Pane;
 import javafx.scene.transform.Rotate;
 
 /**
@@ -17,6 +15,24 @@ public class MainService {
     private Scene scene;
     private double BEGINNING_OFFSET = 0;
     private double offset = BEGINNING_OFFSET;
+
+
+    private double WectorX = 0;
+    private double WectorY = 0;
+    private double oldWectorX = 0;
+    private double oldWectorY = 0;
+    private int TERMINAL_OFFSET = 8;
+
+
+    private double vertical_speed = 0;
+    private double GRAVITY = 0.1;
+    private int MAX_GRAVITY_SPEED = 5;
+    private double offsetDiff = 0.1;
+
+    private double impet = 0;
+    private double lastAngle = 0;
+    private double lastOffset = 0;
+
 
     public MainService(AnchorPane mainPane, Scene scene) {
         System.out.println("creating service...");
@@ -33,42 +49,29 @@ public class MainService {
     }
 
 
-    private double WectorX = 0;
-    private double WectorY = 0;
-    private double oldWectorX = 0;
-    private double oldWectorY = 0;
-    private int TERMINAL_OFFSET = 10;
 
-    public void moveAndRotateShip(int power, int dr) {
+    public void accelerate(int power) {
+        if(power > 0) {
+
+            if (this.offset < TERMINAL_OFFSET) {
+
+                this.offset = this.offset + 0.2;
+
+            } else {
+                this.offset = TERMINAL_OFFSET;
+            }
+        }
+    }
+
+    public void moveShip(int power) {
 
 
-        if (power == 0 && dr == 0) return;
-
-/*
-        System.out.println("dx, dy, dr : " + dx + " " + dy + " " + dr);
-
-
-        final double cx = this.ship.getShipImage().getBoundsInLocal().getWidth()  / 2;
-        final double cy = this.ship.getShipImage().getBoundsInLocal().getHeight() / 2;
-
-        System.out.println("cx, cy : " + cx + " " + cy);
-
-        double x = cx + this.ship.getShipImage().getLayoutX() + dx;
-        double y = cy + this.ship.getShipImage().getLayoutY() + dy;
-
-        System.out.println("x, y : " + x + " " + y);
-*/
-        this.rotateShipBy(dr);
+        if (power == 0) return;
 
 
         if(power > 0) {
 
-            if(this.offset < TERMINAL_OFFSET) {
-                this.offset = this.offset + 0.2;
-            }
-            else {
-                this.offset = TERMINAL_OFFSET;
-            }
+
 
             double p = this.ship.getShipImage().getLocalToSceneTransform().getMyx();
             double q = this.ship.getShipImage().getLocalToSceneTransform().getMyy();
@@ -168,6 +171,10 @@ public class MainService {
             }
 
 
+            lastAngle = Math.abs(angle);
+            impet = offset;
+
+            //TODO obliczanie offsetu i kata zeby po zmianie kierunku nadal dzialal impet
 
            // System.out.println("a, b: " + a + ", " + b);
             //System.out.println("ustawilem wektory: " + this.WectorX + ", " + this.WectorY);
@@ -178,29 +185,11 @@ public class MainService {
 
     }
 
-    private void moveShipTo(double x, double y) {
-        //System.out.println("moving...");
 
-        final double cx = this.ship.getShipImage().getBoundsInLocal().getWidth()  / 2;
-        final double cy = this.ship.getShipImage().getBoundsInLocal().getHeight() / 2;
-        //System.out.println("cx, cy : " + cx + " " + cy);
 
-        if (x - cx >= 0 &&
-                x + cx <= this.scene.getWidth() &&
-                y - cy >= 0 &&
-                y + cy <= this.scene.getHeight()) {
-            double a = x - cx;
-            double b = y - cy;
-            System.out.println("relocate to " + a + " " + b);
-
-            this.ship.getShipImage().setLayoutX(x - cx);
-            this.ship.getShipImage().setLayoutY(y - cy);
-
-        }
-    }
-
-    private void rotateShipBy(int angle) {
+     public void rotateShipBy(int angle) {
         //System.out.println(">>center: " + this.ship.getShipImage().getLayoutX() + ", " + this.ship.getShipImage().getLayoutY());
+        if(angle == 0) return;
 
         this.ship.getShipImage().getTransforms().add(new Rotate(angle, 0,0));
 
@@ -213,10 +202,123 @@ public class MainService {
 
 
 
-    private double vertical_speed = 0;
-    private double GRAVITY = 0.1;
-    private int TERMINAL_VELOCITY = 5;
-    private double offsetDiff = 0.1;
+    public void inertia(int power) {
+        ///bezwladnosc
+        if(this.oldWectorX >= 0 && this.WectorX > 0) {
+            this.WectorX = this.WectorX - 0.1;
+        }
+        else if(this.oldWectorX < 0 && this.WectorX < 0) {
+            this.WectorX = this.WectorX + 0.1;
+        }
+        else if(this.oldWectorX < 0 && this.WectorX > 0) {
+            this.WectorX = this.WectorX - 0.1;
+        }
+        else if(this.oldWectorX > 0 && this.WectorX < 0) {
+            this.WectorX += 0.1;
+        }
+        else {
+            // this.WectorX = 0;
+        }
+
+        if(this.oldWectorY >= 0 && this.WectorY > 0) {
+            this.WectorY = this.WectorY - 0.1;
+        }
+        else if(this.oldWectorY < 0 && this.WectorY < 0) {
+            this.WectorY = this.WectorY + 0.1;
+        }
+        else if(this.oldWectorY < 0 && this.WectorY > 0) {
+            this.WectorY = this.WectorY - 0.1;
+        }
+        else if(this.oldWectorY > 0 && this.WectorY < 0) {
+            this.WectorY += 0.1;
+        }
+        else {
+            //this.WectorY = 0;
+        }
+        this.ship.getShipImage().setLayoutX(this.ship.getShipImage().getLayoutX() + this.WectorX);
+        this.ship.getShipImage().setLayoutY(this.ship.getShipImage().getLayoutY() + this.WectorY);
+
+    }
+
+
+    public void slowDown(int power) {
+
+        if(power == 0) {
+            if(this.offset > 0) {
+                this.offset -= 0.5;
+            }
+            else {
+                this.offset = 0;
+            }
+        }
+
+    }
+
+
+
+    public void impet(int power) {
+        System.out.println("Mój impet: " + impet);
+        impet = impet - (impet * 0.01);
+
+        double iX = 0;//impet X
+        double iY = 0;//impet Y
+
+
+        if(impet > 0) {
+            if(WectorX < 0 && WectorY < 0) {//up-left
+                iX = Math.abs(Math.sin(lastAngle) * impet);
+                iY = Math.abs(Math.cos(lastAngle) * impet);
+
+                this.ship.getShipImage().setLayoutX(this.ship.getShipImage().getLayoutX() - iX);
+                this.ship.getShipImage().setLayoutY(this.ship.getShipImage().getLayoutY() - iY);
+
+            }
+            else if(WectorX >0 && WectorY < 0) {//up-right
+                iX = Math.abs(Math.sin(lastAngle) * impet);
+                iY = Math.abs(Math.cos(lastAngle) * impet);
+                this.ship.getShipImage().setLayoutX(this.ship.getShipImage().getLayoutX() + iX);
+                this.ship.getShipImage().setLayoutY(this.ship.getShipImage().getLayoutY() - iY);
+
+            }
+            else if(WectorX > 0 && WectorY > 0) {//down-right
+                double beta = Math.PI - lastAngle;
+                iX = Math.abs(Math.sin(beta) * impet);
+                iY = Math.abs(Math.cos(beta) * impet);
+                this.ship.getShipImage().setLayoutX(this.ship.getShipImage().getLayoutX() + iX);
+                this.ship.getShipImage().setLayoutY(this.ship.getShipImage().getLayoutY() + iY);
+            }
+            else if(WectorX < 0 && WectorY > 0) {//down-left
+                double beta = Math.PI - lastAngle;
+                iX = Math.abs(Math.sin(beta) * impet);
+                iY = Math.abs(Math.cos(beta) * impet);
+                this.ship.getShipImage().setLayoutX(this.ship.getShipImage().getLayoutX() - iX);
+                this.ship.getShipImage().setLayoutY(this.ship.getShipImage().getLayoutY() + iY);
+            }
+            else if(WectorX == 0 && WectorY < 0) {//up
+                this.ship.getShipImage().setLayoutY(this.ship.getShipImage().getLayoutY() - impet);
+            }
+            else if(WectorX == 0 && WectorY > 0) {//down
+                this.ship.getShipImage().setLayoutY(this.ship.getShipImage().getLayoutY() + impet);
+            }
+            else if (WectorX < 0 && WectorY == 0) {//left
+                this.ship.getShipImage().setLayoutX(this.ship.getShipImage().getLayoutX() - impet);
+            }
+            else if (WectorX > 0 && WectorY == 0) {//right
+                this.ship.getShipImage().setLayoutX(this.ship.getShipImage().getLayoutX() + impet);
+            }
+        }
+
+
+
+
+
+
+
+
+
+    }
+
+
 
     public void gravity(int power) {
         //this.ship.getShipImage().setLayoutX(this.ship.getShipImage().getLayoutX() );
@@ -227,39 +329,6 @@ public class MainService {
 
             //System.out.println("lece dalej: " + this.WectorX + ", " + this.WectorY);
 
-            if(this.oldWectorX >= 0 && this.WectorX > 0) {
-                this.WectorX = this.WectorX - 0.1;
-            }
-            else if(this.oldWectorX < 0 && this.WectorX < 0) {
-                this.WectorX = this.WectorX + 0.1;
-            }
-            else if(this.oldWectorX < 0 && this.WectorX > 0) {
-                this.WectorX = this.WectorX - 0.1;
-            }
-            else if(this.oldWectorX > 0 && this.WectorX < 0) {
-                this.WectorX += 0.1;
-            }
-            else {
-               // this.WectorX = 0;
-            }
-
-            if(this.oldWectorY >= 0 && this.WectorY > 0) {
-                this.WectorY = this.WectorY - 0.1;
-            }
-            else if(this.oldWectorY < 0 && this.WectorY < 0) {
-                this.WectorY = this.WectorY + 0.1;
-            }
-            else if(this.oldWectorY < 0 && this.WectorY > 0) {
-                this.WectorY = this.WectorY - 0.1;
-            }
-            else if(this.oldWectorY > 0 && this.WectorY < 0) {
-                this.WectorY += 0.1;
-            }
-            else {
-                //this.WectorY = 0;
-            }
-           this.ship.getShipImage().setLayoutX(this.ship.getShipImage().getLayoutX() + this.WectorX);
-           this.ship.getShipImage().setLayoutY(this.ship.getShipImage().getLayoutY() + this.WectorY);
 
 
 /*
@@ -315,20 +384,15 @@ public class MainService {
             this.ship.getShipImage().setLayoutY(this.ship.getShipImage().getLayoutY() + impetY);
 
 */
+        if(power == 0) {
+            this.vertical_speed = this.vertical_speed + GRAVITY;
 
-        this.vertical_speed = this.vertical_speed + GRAVITY;
-            if (this.vertical_speed > TERMINAL_VELOCITY)
-            {
-                this.vertical_speed = TERMINAL_VELOCITY;
+            if (this.vertical_speed > MAX_GRAVITY_SPEED) {
+                this.vertical_speed = MAX_GRAVITY_SPEED;
             }
             this.ship.getShipImage().setLayoutY(this.ship.getShipImage().getLayoutY() + this.vertical_speed);
-        if(power == 0) {
-            if(this.offset > 0) {
-                this.offset -= 0.5;
-            }
-            else {
-                this.offset = 0;
-            }
+
+
 
         }
         else {
