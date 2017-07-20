@@ -11,7 +11,7 @@ import javafx.scene.layout.AnchorPane;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-import barol.revival.service.MainService;
+import barol.revival.services.MainService;
 
 public class MainController implements Initializable {
 

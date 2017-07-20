@@ -1,6 +1,7 @@
-package barol.revival.service;
+package barol.revival.services;
 
 import barol.revival.models.Ship;
+import javafx.geometry.Point2D;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.transform.Rotate;
@@ -71,6 +72,8 @@ public class MainService {
 
         if(power > 0) {
 
+            Point2D oldImpetStart = new Point2D(0,0);
+            Point2D oldImpetEnd = new Point2D(WectorX,WectorY);
 
 
             double p = this.ship.getShipImage().getLocalToSceneTransform().getMyx();
@@ -169,6 +172,19 @@ public class MainService {
                 this.WectorX = -this.offset;
                 this.WectorY = 0;
             }
+
+
+
+
+            //nowy wektor
+            Point2D newOffsetStart = new Point2D(0, 0);
+            Point2D newOffsetEnd = new Point2D(WectorX, WectorY);
+
+
+
+
+
+
 
 
             lastAngle = Math.abs(angle);
